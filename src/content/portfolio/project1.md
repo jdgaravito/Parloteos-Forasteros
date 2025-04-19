@@ -1,7 +1,7 @@
 ---
-title: "Project Title"
+title: "Project number 1"
 description: "Project Description"
-thumbnail: "/path/to/thumbnail.jpg"
+thumbnail: "/blog-placeholder-2.jpg"
 technologies: ["tech1", "tech2"]
 completionDate: "2023-12-20"
 featured: false
