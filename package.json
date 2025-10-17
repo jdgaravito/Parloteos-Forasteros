@@ -9,13 +9,14 @@
     "astro": "astro"
   },
   "dependencies": {
-    "@astrojs/mdx": "^4.0.1",
-    "@astrojs/rss": "^4.0.10",
-    "@astrojs/sitemap": "^3.2.1",
-    "@types/three": "^0.170.0",
-    "astro": "^5.0.3",
-    "gsap": "^3.12.5",
+    "@astrojs/mdx": "4.3.7",
+    "@astrojs/rss": "4.0.12",
+    "@astrojs/sitemap": "3.6.0",
+    "@types/three": "^0.160.0",
+    "aframe": "^1.7.1",
+    "astro": "5.14.5",
+    "gsap": "^3.13.0",
     "lil-gui": "^0.20.0",
-    "three": "^0.171.0"
+    "three": "^0.160.0"
   }
 }
