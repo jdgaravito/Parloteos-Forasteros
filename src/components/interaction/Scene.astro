@@ -1,3 +1,6 @@
+<button id="unmute-btn" class="unmute-button">
+  🔇 Activar Sonido
+</button>
 <div id="ar-scene-container">
   <canvas class="webgl"></canvas>
 </div>
@@ -16,7 +19,7 @@
 }
 </script>
 
-<!-- Tu script MindAR -->
+<!-- Tu script MindAR - SOLO UNA VEZ -->
 <script type="module" src="/scripts/mindar-script.js"></script>
 
 <style>
@@ -31,5 +34,31 @@
     width: 100%;
     height: 100%;
     display: block;
+  }
+
+  .unmute-button {
+    padding: 12px 24px;
+    background: rgba(175, 18, 73, 0.95);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+    transition: all 0.3s ease;
+    z-index: 100;
+    margin: 1rem auto;
+    display: block;
+  }
+
+  .unmute-button:hover {
+    background: rgb(175, 18, 73);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(175, 18, 73, 0.5);
+  }
+
+  .unmute-button.active {
+    background: rgba(76, 175, 80, 0.95);
   }
 </style>
