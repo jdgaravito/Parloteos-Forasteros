@@ -1,20 +1,17 @@
-FROM oven/bun:latest as runtime
+FROM oven/bun:latest
 WORKDIR /app
 
-# Copy package files first
 COPY package.json bun.lockb ./
-
-# Install dependencies
 RUN bun install
 
-# Copy the rest of the application
 COPY . .
+RUN bun run build
 
-# Build
-RUN bunx bun astro build
+# Instalar un servidor estático simple
+RUN bun add -g serve
 
-ENV HOST=0.0.0.0
 ENV PORT=3000
 EXPOSE 3000
 
-CMD node ./dist/server/entry.mjs
+# Servir archivos estáticos
+CMD ["serve", "-s", "dist", "-l", "3000"]
