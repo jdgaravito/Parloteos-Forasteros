@@ -2,7 +2,7 @@
 import * as THREE from 'three';
 import { MindARThree } from 'mindar-image-three';
 
-console.log('🎯 Iniciando MindAR...');
+console.log('🎯 Iniciando MindAR con 3 targets...');
 
 // Prevenir múltiples inicializaciones
 if (window.mindarInitialized) {
@@ -10,10 +10,17 @@ if (window.mindarInitialized) {
 } else {
   window.mindarInitialized = true;
   
-  // Inicializar MindAR
+  // Configuración de los 3 targets
+const targets = [
+  { name: 'Botilito', videoSrc: '/videos/Botilito.mp4', size: { width: 1, height: 2 } },
+  { name: 'Firulais', videoSrc: '/videos/Firulais.mp4', size: { width: 1, height: 2 } }, // 👈 Prueba intercambiando
+  { name: 'Seco', videoSrc: '/videos/Seco.mp4', size: { width: 1, height: 2 } }
+];
+
+  // Inicializar MindAR con 3 targets
   const mindarThree = new MindARThree({
     container: document.body,
-    imageTargetSrc: 'targets/botilito.mind',
+    imageTargetSrc: '/targets/combined.mind', // 👈 Usaremos UN solo archivo combinado
   });
 
   const { renderer, scene, camera } = mindarThree;
@@ -22,40 +29,68 @@ if (window.mindarInitialized) {
   const light = new THREE.HemisphereLight(0xffffff, 0xbbbbff, 1);
   scene.add(light);
 
-  // Crear elemento de video UNA SOLA VEZ
-  const video = document.createElement('video');
-  video.src = '/videos/Botilito.mp4';
-  video.loop = true;
-  video.muted = true;
-  video.playsInline = true;
-  video.crossOrigin = 'anonymous';
-  video.volume = 1.0;
+  // Crear videos y planos para cada target
+  const videoElements = [];
+  
+  targets.forEach((target, index) => {
+    // Crear video
+    const video = document.createElement('video');
+    video.src = target.videoSrc;
+    video.loop = true;
+    video.muted = true;
+    video.playsInline = true;
+    video.crossOrigin = 'anonymous';
+    video.volume = 1.0;
+    
+    videoElements.push(video);
 
-  // Crear textura de video
-  const videoTexture = new THREE.VideoTexture(video);
-  videoTexture.minFilter = THREE.LinearFilter;
-  videoTexture.magFilter = THREE.LinearFilter;
-  videoTexture.format = THREE.RGBAFormat;
+    // Crear textura
+    const videoTexture = new THREE.VideoTexture(video);
+    videoTexture.minFilter = THREE.LinearFilter;
+    videoTexture.magFilter = THREE.LinearFilter;
+    videoTexture.format = THREE.RGBAFormat;
 
-  // Crear plano con textura de video
-  const geometry = new THREE.PlaneGeometry(1, 2);
-  const material = new THREE.MeshBasicMaterial({ 
-    map: videoTexture,
-    side: THREE.DoubleSide
+    // Crear plano
+    const geometry = new THREE.PlaneGeometry(target.size.width, target.size.height);
+    const material = new THREE.MeshBasicMaterial({ 
+      map: videoTexture,
+      side: THREE.DoubleSide
+    });
+    const plane = new THREE.Mesh(geometry, material);
+
+    // Agregar a anchor
+    const anchor = mindarThree.addAnchor(index);
+    anchor.group.add(plane);
+
+    // Eventos
+    anchor.onTargetFound = () => {
+      console.log(`✅ ${target.name} encontrado!`);
+      if (video.paused) {
+        video.play().catch(err => {
+          console.warn(`⚠️ Error reproduciendo ${target.name}:`, err);
+        });
+      }
+    };
+
+    anchor.onTargetLost = () => {
+      console.log(`⚠️ ${target.name} perdido`);
+      if (!video.paused) {
+        video.pause();
+      }
+    };
   });
-  const plane = new THREE.Mesh(geometry, material);
 
-  // Agregar al anchor UNA SOLA VEZ
-  const anchor = mindarThree.addAnchor(0);
-  anchor.group.add(plane);
-
-  // Control del botón de sonido
+  // Control del botón de sonido (afecta a todos los videos)
   const unmuteBtn = document.getElementById('unmute-btn');
   let isMuted = true;
 
   unmuteBtn.addEventListener('click', () => {
     isMuted = !isMuted;
-    video.muted = isMuted;
+    
+    // Aplicar a todos los videos
+    videoElements.forEach(video => {
+      video.muted = isMuted;
+    });
     
     if (isMuted) {
       unmuteBtn.textContent = '🔇 Activar Sonido';
@@ -65,29 +100,8 @@ if (window.mindarInitialized) {
       unmuteBtn.classList.add('active');
     }
     
-    console.log(isMuted ? '🔇 Audio silenciado' : '🔊 Audio activado');
+    console.log(isMuted ? '🔇 Todos los audios silenciados' : '🔊 Todos los audios activados');
   });
-
-  // Eventos con verificación de estado
-  anchor.onTargetFound = () => {
-    console.log('✅ Target encontrado!');
-    
-    if (video.paused) {
-      video.play().catch(err => {
-        console.warn('⚠️ No se pudo reproducir el video:', err);
-      });
-      console.log('▶️ Reproduciendo video...');
-    }
-  };
-
-  anchor.onTargetLost = () => {
-    console.log('⚠️ Target perdido');
-    
-    if (!video.paused) {
-      video.pause();
-      console.log('⏸️ Video pausado');
-    }
-  };
 
   // Loop de animación
   renderer.setAnimationLoop(() => {
@@ -96,12 +110,14 @@ if (window.mindarInitialized) {
 
   // Iniciar
   await mindarThree.start();
-  console.log('✅ MindAR iniciado - apunta a tu imagen objetivo');
+  console.log('✅ MindAR iniciado con 3 targets');
 
-  // Cleanup cuando se cierre
+  // Cleanup
   window.addEventListener('beforeunload', () => {
-    video.pause();
-    video.src = '';
+    videoElements.forEach(video => {
+      video.pause();
+      video.src = '';
+    });
     mindarThree.stop();
     window.mindarInitialized = false;
   });
